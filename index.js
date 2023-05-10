@@ -37,7 +37,7 @@ let upload = multer({ storage: storage });
 //handle CORS (Cross-Origin Resource Sharing) requests
 const cors = require("cors");
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "https://my-recipe-application.netlify.app",
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
