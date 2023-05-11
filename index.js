@@ -2,20 +2,16 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-
-//handle CORS (Cross-Origin Resource Sharing) requests
-const corsOptions = {
-  origin: '*',
-  credentials: true, //access-control-allow-credentials:true
-  optionSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-
 require("dotenv").config();
 const port = process.env.PORT || 4000;
 const mongoose = require("mongoose");
 const multer = require("multer");
 const Recipe = require("./API/models/recipe");
+
+app.use((req, res, next)=>{
+    res.setHeader("Access-Control-Allow-Origin", "https://my-recipe-application.netlify.app");
+    next();
+})
 
 //Establishing a connection to the MongoDB database.
 mongoose.connect(process.env.MONGODB_URL);
