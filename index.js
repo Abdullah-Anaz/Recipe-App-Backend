@@ -8,6 +8,14 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const Recipe = require("./API/models/recipe");
 
+//handle CORS (Cross-Origin Resource Sharing) requests
+const corsOptions = {
+  origin: "https://my-recipe-application.netlify.app",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
 //Establishing a connection to the MongoDB database.
 mongoose.connect(process.env.MONGODB_URL);
 
@@ -34,14 +42,6 @@ const getExt = (mimeType) => {
 
 // handle file uploads.
 let upload = multer({ storage: storage });
-
-//handle CORS (Cross-Origin Resource Sharing) requests
-const corsOptions = {
-  origin: "https://my-recipe-application.netlify.app/",
-  credentials: true, //access-control-allow-credentials:true
-  optionSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
 
 //parse incoming requests with JSON or URL-encoded payloads
 app.use(express.json());
