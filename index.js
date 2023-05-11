@@ -1,6 +1,7 @@
 //Importing necessary modules for the application
 const express = require("express");
 const app = express();
+const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 4000;
 const mongoose = require("mongoose");
@@ -35,7 +36,6 @@ const getExt = (mimeType) => {
 let upload = multer({ storage: storage });
 
 //handle CORS (Cross-Origin Resource Sharing) requests
-const cors = require("cors");
 const corsOptions = {
   origin: "https://my-recipe-application.netlify.app/",
   credentials: true, //access-control-allow-credentials:true
