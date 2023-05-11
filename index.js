@@ -5,7 +5,7 @@ const cors = require("cors");
 
 //handle CORS (Cross-Origin Resource Sharing) requests
 const corsOptions = {
-  origin: "https://my-recipe-application.netlify.app",
+  origin: '*',
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
