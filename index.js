@@ -2,11 +2,6 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-require("dotenv").config();
-const port = process.env.PORT || 4000;
-const mongoose = require("mongoose");
-const multer = require("multer");
-const Recipe = require("./API/models/recipe");
 
 //handle CORS (Cross-Origin Resource Sharing) requests
 const corsOptions = {
@@ -15,6 +10,12 @@ const corsOptions = {
   optionSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
+
+require("dotenv").config();
+const port = process.env.PORT || 4000;
+const mongoose = require("mongoose");
+const multer = require("multer");
+const Recipe = require("./API/models/recipe");
 
 //Establishing a connection to the MongoDB database.
 mongoose.connect(process.env.MONGODB_URL);
