@@ -2,40 +2,26 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+
+//handle CORS (Cross-Origin Resource Sharing) requests
+const corsOptions = {
+  origin: "https://my-recipe-application.netlify.app",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
 require("dotenv").config();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT;
 const mongoose = require("mongoose");
 const multer = require("multer");
 const Recipe = require("./API/models/recipe");
-
-app.use((req, res, next)=>{
-    res.setHeader("Access-Control-Allow-Origin", "https://my-recipe-application.netlify.app");
-    next();
-})
 
 //Establishing a connection to the MongoDB database.
 mongoose.connect(process.env.MONGODB_URL);
 
 // Configuring Multer for handling file uploads.
-// specifies where to save the uploaded files and how to name them.
-let storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads");
-  },
-  filename: function (req, file, cb) {
-    cb(null, `${file.fieldname}-${Date.now()}${getExt(file.mimetype)}`);
-  },
-});
-
-// returns the file extension based on the MIME type.
-const getExt = (mimeType) => {
-  switch (mimeType) {
-    case "image/png":
-      return ".png";
-    case "image/jpeg":
-      return ".jpeg";
-  }
-};
+let storage = multer.memoryStorage();
 
 // handle file uploads.
 let upload = multer({ storage: storage });
@@ -71,27 +57,23 @@ app.get("/recipe/:id", (req, res) => {
 
 // POST request to add a new recipe to the database
 app.post("/add", upload.single("image"), (req, res) => {
-  const recipe = req.body;
+   const recipe = req.body;
 
-  if (req.file) {
-    fileUrl = req.file.path.replace(/\\/g, "/");
-  } else {
-    //else use the previous image
-    fileUrl = "uploads/default.jpg";
-  }
-
-  // const fileUrl = req.file.path.replace(/\\/g, "/");
-
-  let dbRecipe = {
+  let dbRecipe = new Recipe({
     recipeName: recipe.name,
     category: recipe.category,
     ingredients: recipe.ingredients,
     description: recipe.description,
-    image: fileUrl,
-  };
+    image: {
+      name: req.file.originalname,
+      data: req.file.buffer,
+      contentType: req.file.mimetype,
+    },
+  });
 
   // Insert the new recipe into the database
-  Recipe.create(dbRecipe)
+  dbRecipe
+    .save()
     .then(() => {
       res.status(200).send("added");
     })
@@ -117,17 +99,8 @@ app.delete("/delete/:id", (req, res) => {
 // Set up a POST endpoint to update an existing recipe in the database
 app.post("/update", upload.single("image"), (req, res) => {
   const recipe = req.body;
-  console.log(recipe);
-  let fileUrl;
-  // If a new image file was uploaded, use its URL for the updated recipe
-  if (req.file) {
-    fileUrl = req.file.path.replace(/\\/g, "/");
-  } else {
-    //else use the previous image
-    fileUrl = recipe.image;
-  }
 
-  //upadate the recipe with the provided ID from the database
+  //update the recipe with the provided ID from the database
   Recipe.updateOne(
     { _id: recipe.id },
     {
@@ -136,12 +109,32 @@ app.post("/update", upload.single("image"), (req, res) => {
         category: recipe.category,
         ingredients: recipe.ingredients,
         description: recipe.description,
-        image: fileUrl,
       },
     }
   )
     .then(() => {
-      res.status(200).send("updated");
+      if (req.file) {
+        Recipe.updateOne(
+          { _id: recipe.id },
+          {
+            $set: {
+              image: {
+                name: req.file.originalname,
+                data: req.file.buffer,
+                contentType: req.file.mimetype,
+              },
+            },
+          }
+        )
+          .then(() => {
+            res.status(200).send("updated + image");
+          })
+          .catch((err) => {
+            res.status(500).send(err);
+          });
+      } else {
+        res.status(200).send("updated - image");
+      }
     })
     .catch((err) => {
       res.status(500).send(err);
@@ -153,5 +146,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("Example app listening on port");
+  console.log("Listening...");
 });
