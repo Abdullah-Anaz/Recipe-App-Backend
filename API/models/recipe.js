@@ -5,7 +5,11 @@ const dbSchema = Mongoose.Schema({
   recipeName: String,
   ingredients: Array,
   description: String,
-  image: String,
+  image: {
+    name: String,
+    data: Buffer,
+    contentType: String,
+  },
 });
 
-module.exports = Mongoose.model("recipe", dbSchema);
+module.exports = Mongoose.model("recipeModel", dbSchema);
